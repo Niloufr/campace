@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:root@localhost:3306/campace"
+}
+
+// model artists {
+//   artist_id Int     @id @default(autoincrement())
+//   name      String  @db.VarChar(255)
+//   songs     songs[]
+// }
+
+// model songs {
+//   song_id   Int      @id @default(autoincrement())
+//   name      String   @db.VarChar(255)
+//   artist_id Int?
+//   artists   artists? @relation(fields: [artist_id], references: [artist_id], onDelete: NoAction, onUpdate: NoAction, map: "songs_ibfk_1")
+//   votes     votes[]
+
+//   @@index([artist_id], map: "artist_id")
+// }
+
+// model voters {
+//   voter_id Int     @id @default(autoincrement())
+//   name     String  @db.VarChar(255)
+//   votes    votes[]
+// }
+
+// model votes {
+//   vote_id  Int     @id @default(autoincrement())
+//   voter_id Int?
+//   song_id  Int?
+//   points   Int?
+//   voters   voters? @relation(fields: [voter_id], references: [voter_id], onDelete: NoAction, onUpdate: NoAction, map: "votes_ibfk_1")
+//   songs    songs?  @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction, map: "votes_ibfk_2")
+
+//   @@index([song_id], map: "song_id")
+//   @@index([voter_id], map: "voter_id")
+// }
