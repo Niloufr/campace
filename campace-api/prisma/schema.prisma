@@ -7,36 +7,94 @@ datasource db {
   url      = "mysql://root:root@localhost:3306/campace"
 }
 
-// model artists {
-//   artist_id Int     @id @default(autoincrement())
-//   name      String  @db.VarChar(255)
-//   songs     songs[]
-// }
+model User {
+  user_id    Int     @id @default(autoincrement())
+  user_name String @db.VarChar(255)
+  email String  @unique
+  date_joind  DateTime @default(now())
+  bookings Booking[] 
+  reviews Review[]
+  campspots Campspot[]
 
-// model songs {
-//   song_id   Int      @id @default(autoincrement())
-//   name      String   @db.VarChar(255)
-//   artist_id Int?
-//   artists   artists? @relation(fields: [artist_id], references: [artist_id], onDelete: NoAction, onUpdate: NoAction, map: "songs_ibfk_1")
-//   votes     votes[]
+}
 
-//   @@index([artist_id], map: "artist_id")
-// }
+model Campspot {
+  campspot_id Int @id@default(autoincrement())
+  owner_id Int 
+  name String @db.VarChar(255)
+  description String 
+  location_id Int
+  price_per_night Int
+  capacity Int
+  owner User @relation(fields:[owner_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  bookings Booking[]
+  reviews Review[]
+  location Location @relation(fields:[location_id],references: [location_id], onDelete: Cascade, onUpdate: Cascade)
+  amenities CampspotAmenity[]
 
-// model voters {
-//   voter_id Int     @id @default(autoincrement())
-//   name     String  @db.VarChar(255)
-//   votes    votes[]
-// }
+  @@unique([name, location_id]) //the combo of name and location of a spot should be unique
+  @@index([owner_id])
+  @@index([location_id])
+}
 
-// model votes {
-//   vote_id  Int     @id @default(autoincrement())
-//   voter_id Int?
-//   song_id  Int?
-//   points   Int?
-//   voters   voters? @relation(fields: [voter_id], references: [voter_id], onDelete: NoAction, onUpdate: NoAction, map: "votes_ibfk_1")
-//   songs    songs?  @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction, map: "votes_ibfk_2")
+model CampspotAmenity {
+  amenity_id Int @id@default(autoincrement())
+  campspot_id Int
+  amenity_name String @db.VarChar(255)
+  campspots Campspot @relation(fields:[campspot_id], references: [campspot_id], onDelete: Cascade, onUpdate: Cascade)
 
-//   @@index([song_id], map: "song_id")
-//   @@index([voter_id], map: "voter_id")
-// }
+  @@unique([campspot_id, amenity_name]) //to avoid duplicate amenities for a spot
+  @@index([amenity_name])
+  
+}
+
+model Location {
+  location_id Int @id@default(autoincrement())
+  address String
+  city String
+  province_or_state String?
+  country String
+  postal_code Int
+  @@index([city, country])
+  campspots Campspot[]
+}
+
+model Booking {
+  booking_id Int @id@default(autoincrement())
+  user_id Int
+  campspot_id Int
+  booking_date DateTime @default(now())
+  startDate DateTime
+  endDate DateTime
+  total_price Int
+  status Status @default(PENDING)
+  user User @relation(fields:[user_id], references: [user_id] , onDelete: Cascade, onUpdate: Cascade)
+  campspot Campspot @relation(fields:[campspot_id], references: [campspot_id], onDelete: Cascade, onUpdate: Cascade)
+  
+  @@unique([campspot_id, startDate, endDate])       //to avoid double booking of the same spot in the same time
+  @@index([campspot_id])                           // checking the bookings of a campspot
+  @@index([status])                               // to filter based on the booking status
+  @@index([startDate, endDate])                  // to check availability dates
+ 
+
+}
+
+model Review {
+  review_id Int @id@default(autoincrement())
+  user_id Int
+  campspot_id Int
+  comment String?
+  rating Int
+  date_posted DateTime @default(now())
+  user User @relation(fields:[user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  campspot Campspot @relation(fields:[campspot_id], references: [campspot_id ], onDelete: Cascade, onUpdate: Cascade)
+  
+  @@unique([user_id, campspot_id])                    //to make sure each user can only leave one review on a campspot
+}
+
+enum Status {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}

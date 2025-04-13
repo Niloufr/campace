@@ -19,12 +19,14 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routing 
+const userRouter = require('./routes/user');
 // const indexRouter = require('./routes/index');
 // const artistsRouter = require('./routes/artists');
 // const songsRouter = require('./routes/songs');
 // const rankingRouter = require('./routes/ranking');
 // const votesRouter = require('./routes/votes');
 
+app.use('/users', userRouter)
 // app.use('/', indexRouter);
 // app.use('/artists', artistsRouter);
 // app.use('/songs', songsRouter);
