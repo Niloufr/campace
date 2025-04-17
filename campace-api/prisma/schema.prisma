@@ -11,10 +11,11 @@ model User {
   user_id    Int     @id @default(autoincrement())
   user_name String @db.VarChar(255)
   email String  @unique
-  date_joind  DateTime @default(now())
+  date_joined  DateTime @default(now())
+  role Role @default(USER)
   bookings Booking[] 
   reviews Review[]
-  campspots Campspot[]
+  campspot Campspot[]
 
 }
 
@@ -41,7 +42,7 @@ model CampspotAmenity {
   amenity_id Int @id@default(autoincrement())
   campspot_id Int
   amenity_name String @db.VarChar(255)
-  campspots Campspot @relation(fields:[campspot_id], references: [campspot_id], onDelete: Cascade, onUpdate: Cascade)
+  campspot Campspot @relation(fields:[campspot_id], references: [campspot_id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([campspot_id, amenity_name]) //to avoid duplicate amenities for a spot
   @@index([amenity_name])
@@ -56,7 +57,7 @@ model Location {
   country String
   postal_code Int
   @@index([city, country])
-  campspots Campspot[]
+  campspot Campspot[]
 }
 
 model Booking {
@@ -97,4 +98,9 @@ enum Status {
   CONFIRMED
   CANCELLED
   COMPLETED
+}
+
+enum Role {
+  USER
+  OWNER
 }

@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 
-const app = express();
+const app = express(); //by calling app as the express function, apps is created - it allows us to run our entire server
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
