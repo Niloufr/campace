@@ -1,13 +1,13 @@
 <template>
   <div id="app">
     <header>
-      <h1>CampAce</h1>
+      <h1>Campace</h1>
       <nav>
         <button @click="setActivePage('home')">Home</button>
         <button @click="setActivePage('explore')">Explore</button>
-        <button @click="setActivePage('addspot')">Add Spot</button>
-        <button @click="setActivePage('mytrips')">My Trips</button>
-        <button @click="setActivePage('profile')">Profile</button>
+        <button v-if="isLoggedIn" @click="setActivePage('addspot')">Add Spot</button>
+        <button v-if="isLoggedIn" @click="setActivePage('mytrips')">My Trips</button>
+        <button  @click="setActivePage('profile')">Profile</button>
         <button v-if="!isLoggedIn" @click="setActivePage('login')">Login</button>
         <button v-if="!isLoggedIn" @click="setActivePage('create-account')">Sign Up</button>
         <button v-if="isLoggedIn" @click="logout">Logout</button>
@@ -28,7 +28,7 @@
       
       <!-- Default content if no page is selected -->
       <div v-else class="welcome-content">
-        <h2>Welcome to CampAce!</h2>
+        <h2>Welcome to Campace!</h2>
         <p>Your ultimate camping companion. Find and share the best camping spots.</p>
         <button class="cta-button" @click="setActivePage('explore')">Start Exploring</button>
       </div>

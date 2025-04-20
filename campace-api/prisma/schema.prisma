@@ -11,6 +11,7 @@ model User {
   user_id    Int     @id @default(autoincrement())
   user_name String @db.VarChar(255)
   email String  @unique
+  password String
   date_joined  DateTime @default(now())
   role Role @default(USER)
   bookings Booking[] 
