@@ -61,6 +61,16 @@
           submit
         </v-btn>
       </form>
+      <v-alert
+        v-if="error"
+        type="error"
+        dismissible
+        @click:close="error = false"
+        transition="scale-transition"
+        class="mt-4"
+      >
+        {{ error }}
+    </v-alert>
     </validation-observer>
   </template>
   <script>
@@ -88,8 +98,8 @@
       username: '',
       email: '',
       password: '',
-      repeatPassword: ''
-      
+      repeatPassword: '',
+      error: '',
     }),
 
     methods: {
@@ -108,11 +118,11 @@
                         password: this.password
                     })
                 })
-                .then((data) => {
+                .then(async (data) => {
                     if (data.status < 300) {
                         this.$emit('account-created')
                     } else {
-                        // TODO show error
+                        this.error = (await data.json()).message ?? 'Unknown error'
                     }
                 })
       },
