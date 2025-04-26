@@ -1,4 +1,5 @@
 <template>
+  <v-app>
   <div id="app">
     <header>
       <h1>Campace</h1>
@@ -38,6 +39,7 @@
       <p>&copy; 2025 CampAce. All rights reserved.</p>
     </footer>
   </div>
+</v-app>
 </template>
 
 <script>

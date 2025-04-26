@@ -8,31 +8,31 @@ datasource db {
 }
 
 model User {
-  user_id    Int     @id @default(autoincrement())
-  user_name String @db.VarChar(255)
-  email String  @unique
-  password String
-  date_joined  DateTime @default(now())
-  role Role @default(USER)
-  bookings Booking[] 
-  reviews Review[]
-  campspot Campspot[]
-  locations Location[]
+  user_id     Int        @id @default(autoincrement())
+  user_name   String     @db.VarChar(255)
+  email       String     @unique
+  password    String
+  date_joined DateTime   @default(now())
+  role        Role       @default(USER)
+  bookings    Booking[]
+  reviews     Review[]
+  campspot    Campspot[]
+  locations   Location[]
 }
 
 model Campspot {
-  campspot_id Int @id@default(autoincrement())
-  owner_id Int 
-  name String @db.VarChar(255)
-  description String 
-  location_id Int
+  campspot_id     Int               @id @default(autoincrement())
+  owner_id        Int
+  name            String            @db.VarChar(255)
+  description     String
+  location_id     Int
   price_per_night Int
-  capacity Int
-  owner User @relation(fields:[owner_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
-  bookings Booking[]
-  reviews Review[]
-  location Location @relation(fields:[location_id],references: [location_id], onDelete: Cascade, onUpdate: Cascade)
-  amenities CampspotAmenity[]
+  capacity        Int
+  owner           User              @relation(fields: [owner_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  bookings        Booking[]
+  reviews         Review[]
+  location        Location          @relation(fields: [location_id], references: [location_id], onDelete: Cascade, onUpdate: Cascade)
+  amenities       CampspotAmenity[]
 
   @@unique([name, location_id]) //the combo of name and location of a spot should be unique
   @@index([owner_id])
@@ -40,60 +40,58 @@ model Campspot {
 }
 
 model CampspotAmenity {
-  amenity_id Int @id@default(autoincrement())
-  campspot_id Int
-  amenity_name String @db.VarChar(255)
-  campspot Campspot @relation(fields:[campspot_id], references: [campspot_id], onDelete: Cascade, onUpdate: Cascade)
+  amenity_id   Int      @id @default(autoincrement())
+  campspot_id  Int
+  amenity_name String   @db.VarChar(255)
+  campspot     Campspot @relation(fields: [campspot_id], references: [campspot_id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([campspot_id, amenity_name]) //to avoid duplicate amenities for a spot
   @@index([amenity_name])
-  
 }
 
 model Location {
-  location_id Int @id@default(autoincrement())
-  owner_id Int 
-  address String
-  city String
+  location_id       Int        @id @default(autoincrement())
+  owner_id          Int
+  address           String
+  city              String
   province_or_state String?
-  country String
-  postal_code Int
+  country           String
+  postal_code       Int
+  campspot          Campspot[]
+  owner             User       @relation(fields: [owner_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+
   @@index([city, country])
-  campspot Campspot[]
-  owner User @relation(fields:[owner_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Booking {
-  booking_id Int @id@default(autoincrement())
-  user_id Int
-  campspot_id Int
+  booking_id   Int      @id @default(autoincrement())
+  user_id      Int
+  campspot_id  Int
   booking_date DateTime @default(now())
-  startDate DateTime
-  endDate DateTime
-  total_price Int
-  status Status @default(PENDING)
-  user User @relation(fields:[user_id], references: [user_id] , onDelete: Cascade, onUpdate: Cascade)
-  campspot Campspot @relation(fields:[campspot_id], references: [campspot_id], onDelete: Cascade, onUpdate: Cascade)
-  
-  @@unique([campspot_id, startDate, endDate])       //to avoid double booking of the same spot in the same time
-  @@index([campspot_id])                           // checking the bookings of a campspot
-  @@index([status])                               // to filter based on the booking status
-  @@index([startDate, endDate])                  // to check availability dates
- 
+  startDate    DateTime
+  endDate      DateTime
+  total_price  Int
+  status       Status   @default(PENDING)
+  user         User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  campspot     Campspot @relation(fields: [campspot_id], references: [campspot_id], onDelete: Cascade, onUpdate: Cascade)
 
+  @@unique([campspot_id, startDate, endDate]) //to avoid double booking of the same spot in the same time
+  @@index([campspot_id]) // checking the bookings of a campspot
+  @@index([status]) // to filter based on the booking status
+  @@index([startDate, endDate]) // to check availability dates
 }
 
 model Review {
-  review_id Int @id@default(autoincrement())
-  user_id Int
+  review_id   Int      @id @default(autoincrement())
+  user_id     Int
   campspot_id Int
-  comment String?
-  rating Int
+  comment     String?
+  rating      Int
   date_posted DateTime @default(now())
-  user User @relation(fields:[user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
-  campspot Campspot @relation(fields:[campspot_id], references: [campspot_id ], onDelete: Cascade, onUpdate: Cascade)
-  
-  @@unique([user_id, campspot_id])                    //to make sure each user can only leave one review on a campspot
+  user        User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  campspot    Campspot @relation(fields: [campspot_id], references: [campspot_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([user_id, campspot_id]) //to make sure each user can only leave one review on a campspot
 }
 
 enum Status {

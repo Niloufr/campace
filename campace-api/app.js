@@ -30,9 +30,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routing 
 const userRouter = require('./routes/user');
-
+const campspotRouter = require('./routes/campspot'); 
+const locationRouter = require('./routes/location'); 
 
 app.use('/users', userRouter)
+app.use('/campspots', campspotRouter)
+app.use('/locations', locationRouter)
 
 
 // catch 404 and forward to error handler
