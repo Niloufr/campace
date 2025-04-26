@@ -37,7 +37,6 @@ router.post('/login', async function (req, res, next) {
 router.post('/', async (req, res, next) => {
   try {
     const userData = req.body;
-    console.log(userData)
     const existingUser = await prisma.user.findUnique({
       where: { email: userData.email }
     });
@@ -55,9 +54,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // get user info
-router.get('/profile', async (req, res, next) => {
-  const email = req.cookies.email || req.query.email;
-  
+router.get('/profile', async (req, res, next) => {  
 
   if (!req.session.user) {
     return res.status(401).json({ message: 'Not authenticated' });

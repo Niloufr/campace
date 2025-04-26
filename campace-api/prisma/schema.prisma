@@ -17,7 +17,7 @@ model User {
   bookings Booking[] 
   reviews Review[]
   campspot Campspot[]
-
+  locations Location[]
 }
 
 model Campspot {
@@ -52,6 +52,7 @@ model CampspotAmenity {
 
 model Location {
   location_id Int @id@default(autoincrement())
+  owner_id Int 
   address String
   city String
   province_or_state String?
@@ -59,6 +60,7 @@ model Location {
   postal_code Int
   @@index([city, country])
   campspot Campspot[]
+  owner User @relation(fields:[owner_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Booking {
