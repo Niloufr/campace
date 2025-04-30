@@ -13,7 +13,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(cors({
-  origin: 'http://localhost:8080', 
+  origin: 'http://localhost:8080',
   credentials: true
 }));
 app.use(session({
@@ -30,12 +30,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routing 
 const userRouter = require('./routes/user');
-const campspotRouter = require('./routes/campspot'); 
-const locationRouter = require('./routes/location'); 
+const campspotRouter = require('./routes/campspot');
+const locationRouter = require('./routes/location');
+const amenityRouter = require('./routes/amenity');
 
 app.use('/users', userRouter)
 app.use('/campspots', campspotRouter)
 app.use('/locations', locationRouter)
+app.use('/amenities', amenityRouter)
 
 
 // catch 404 and forward to error handler

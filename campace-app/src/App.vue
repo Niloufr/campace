@@ -8,6 +8,7 @@
         <button @click="setActivePage('explore')">Explore</button>
         <button v-if="isLoggedIn" @click="setActivePage('addspot')">Add Spot</button>
         <button v-if="isLoggedIn" @click="setActivePage('mytrips')">My Trips</button>
+        <button v-if="isLoggedIn" @click="setActivePage('spot-overview')">My Camping Spots</button>
         <button v-if="isLoggedIn" @click="setActivePage('profile')">Profile</button>
         <button v-if="!isLoggedIn" @click="setActivePage('login')">Login</button>
         <button v-if="!isLoggedIn" @click="setActivePage('create-account')">Sign Up</button>

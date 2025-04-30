@@ -36,4 +36,51 @@ router.post('/', async (req, res, next) => {
 
 });
 
+//get campspot overview
+router.get('/', async (req, res, next) => {
+
+
+    try {
+
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Not authenticated' });
+        }
+
+
+
+        const campspots = await prisma.campspot.findMany({
+            where: { owner_id: req.session.user.user_id },
+            select: {
+                campspot_id: true,
+                name: true,
+                description: true,
+                price_per_night: true,
+                capacity: true,
+                location: {
+                    select: {
+                        address: true,
+                        city: true,
+                        country: true
+                    }
+                },
+
+                //TODO add average rating - reviews
+
+            }
+
+
+        });
+
+        return res.status(200).json(campspots);
+
+
+    } catch (error) {
+        console.error('Error fetching campspots:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
+
+
 module.exports = router;

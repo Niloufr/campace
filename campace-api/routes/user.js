@@ -6,14 +6,14 @@ const prisma = new PrismaClient();
 
 // login
 router.post('/login', async function (req, res, next) {
-  const { email, password } = req.body; 
-  
+  const { email, password } = req.body;
+
   try {
-    const user = await prisma.user.findFirst({where: { email: email}, select: { user_id: true, user_name: true, email: true, password: true }});
+    const user = await prisma.user.findFirst({ where: { email: email }, select: { user_id: true, user_name: true, email: true, password: true } });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
     if (user.password !== password) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -24,13 +24,13 @@ router.post('/login', async function (req, res, next) {
       email: user.email
     };
 
-    
+
     return res.status(200).json({ message: 'Login successful' });
   } catch (error) {
     console.error('Login error:', error);
     return res.status(500).json({ message: 'Server error' });
   }
-  
+
 });
 
 // create new user
@@ -46,7 +46,7 @@ router.post('/', async (req, res, next) => {
     const newUser = await prisma.user.create({
       data: userData
     });
-    
+
     res.status(201).json(newUser);
   } catch (error) {
     next(error);
@@ -54,12 +54,12 @@ router.post('/', async (req, res, next) => {
 });
 
 // get user info
-router.get('/profile', async (req, res, next) => {  
+router.get('/profile', async (req, res, next) => {
 
   if (!req.session.user) {
     return res.status(401).json({ message: 'Not authenticated' });
   }
-  
+
   try {
     const user = await prisma.user.findUnique({
       where: { user_id: req.session.user.user_id },
@@ -68,13 +68,13 @@ router.get('/profile', async (req, res, next) => {
         user_name: true,
         email: true,
         date_joined: true
-        
+
       }
     });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
-    } 
+    }
     return res.status(200).json(user);
 
   } catch (error) {
@@ -103,12 +103,12 @@ router.put('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
     const userData = req.body;
-    
+
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(id) },
       data: userData
     });
-    
+
     res.json(updatedUser);
   } catch (error) {
     if (error.code === 'P2025') {
@@ -122,11 +122,11 @@ router.put('/:id', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    
+
     await prisma.user.delete({
       where: { id: parseInt(id) }
     });
-    
+
     res.status(204).send();
   } catch (error) {
     if (error.code === 'P2025') {
