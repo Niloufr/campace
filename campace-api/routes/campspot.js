@@ -80,6 +80,27 @@ router.get('/', async (req, res, next) => {
     }
 });
 
+//get a single campspot
+router.get('/:id', async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Not authenticated' });
+        }
+        const spot = await prisma.campspot.findFirst({
+            where: { campspot_id: id }
+        });
+        if (!spot) {
+            return res.status(404).json({ message: 'Spot not found' });
+        }
+        return res.status(200).json(spot);
+
+
+
+    } catch (error) {
+        next(error)
+    }
+})
 
 
 

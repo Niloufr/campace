@@ -101,7 +101,7 @@
                 :key="amenity.amenity_name"
                 class="ma-1"
                 close
-                @click:close="confirmDeleteAmenity(spot.campspot_id, amenity.amenity_name)"
+                @click:close="confirmDeleteAmenity(amenity.amenity_id, spot.campspot_id)"
               >
                 {{ amenity.amenity_name }}
               </v-chip>
@@ -158,11 +158,6 @@
                 required
                 :rules="[v => !!v || 'Amenity is required']"
               ></v-select>
-              <v-text-field
-                v-model="newAmenity.description"
-                label="Description (Optional)"
-                hint="Add details about this amenity"
-              ></v-text-field>
             </v-form>
           </v-card-text>
           <v-card-actions>
@@ -261,17 +256,13 @@
         selectedSpot: null,
         newAmenity: {
           campspot_id: null,
-          amenity_name: '',
-          description: ''
+          amenity_name: ''
         },
         amenityLoading: false,
         
         // Delete amenity dialog
         deleteAmenityDialog: false,
-        amenityToDelete: {
-          campspot_id: null,
-          amenity_name: ''
-        },
+        amenityToDelete: null,
         
         // Delete spot dialog
         deleteSpotDialog: false,
@@ -319,7 +310,7 @@
       
       async fetchAmenities(campspotId) {
         try {
-          const response = await fetch(`http://localhost:3000/campspots/${campspotId}`, {credentials: 'include'});
+          const response = await fetch(`http://localhost:3000/amenities/?campspot_id=${campspotId}`, {credentials: 'include'});
           
           if (!response.ok) {
             throw new Error('Failed to fetch amenities');
@@ -338,8 +329,7 @@
         this.selectedSpot = spot;
         this.newAmenity = {
           campspot_id: spot.campspot_id,
-          amenity_name: '',
-          description: ''
+          amenity_name: ''
         };
         
         // Filter out already added amenities
@@ -390,11 +380,11 @@
         }
       },
       
-      confirmDeleteAmenity(campspotId, amenityName) {
+      confirmDeleteAmenity(id, campspot_id) {
         this.amenityToDelete = {
-          campspot_id: campspotId,
-          amenity_name: amenityName
-        };
+          amenity_id: id,
+          campspot_id: campspot_id
+        }
         this.deleteAmenityDialog = true;
       },
       
@@ -402,7 +392,7 @@
         this.amenityLoading = true;
         
         try {
-          const response = await fetch(`http://localhost:3000/amenities/${this.amenityToDelete.campspot_id}/${this.amenityToDelete.amenity_name}`, {
+          const response = await fetch(`http://localhost:3000/amenities/${this.amenityToDelete.amenity_id}`, {
             method: 'DELETE',
             credentials: 'include'
           });
