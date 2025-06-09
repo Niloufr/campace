@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient, Prisma } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const jwt = require('jsonwebtoken');
@@ -84,75 +84,34 @@ router.get('/', authenticateToken, async (req, res, next) => {
     }
 });
 
-// Search campspots by location and geo (public route)
 router.get('/search', async (req, res, next) => {
     try {
-        const { location, lat, lng } = req.query;
-        let spots;
-
-        if (lat && lng) {
-            // If coordinates provided, search all spots and calculate distances
-            spots = await prisma.campspot.findMany({
-                include: {
-                    location: true,
-                    amenities: true
+        const { city, country, minPrice, maxPrice, amenities, minSpots, maxSpots } = req.query;
+        const where = {
+            location: {
+                ...(city && { city: { contains: city } }),
+                ...(country && { country: { contains: country } })
+            }
+        };
+        if (minPrice) where.price_per_night = { ...where.price_per_night, gte: parseFloat(minPrice) };
+        if (maxPrice) where.price_per_night = { ...where.price_per_night, lte: parseFloat(maxPrice) };
+        if (minSpots) where.capacity = { ...where.capacity, gte: parseInt(minSpots) };
+        if (maxSpots) where.capacity = { ...where.capacity, lte: parseInt(maxSpots) };
+        if (amenities) {
+            const amenityList = amenities.split(',');
+            where.amenities = {
+                some: {
+                    name: { in: amenityList }
                 }
-            });
-
-            // Calculate distances
-            spots = spots.map(spot => {
-                if (spot.location.latitude && spot.location.longitude) {
-                    const distance = calculateDistance(
-                        parseFloat(lat),
-                        parseFloat(lng),
-                        spot.location.latitude,
-                        spot.location.longitude
-                    );
-                    return {
-                        ...spot,
-                        distance
-                    };
-                }
-                return spot;
-            });
-
-            // Sort by distance
-            spots.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
-        } else if (location) {
-            // Search by city or country
-            spots = await prisma.campspot.findMany({
-                include: {
-                    location: true,
-                    amenities: true
-                },
-                where: {
-                    OR: [
-                        {
-                            location: {
-                                city: {
-                                    contains: location
-                                }
-                            }
-                        },
-                        {
-                            location: {
-                                country: {
-                                    contains: location
-                                }
-                            }
-                        }
-                    ]
-                }
-            });
-        } else {
-            // Return all spots
-            spots = await prisma.campspot.findMany({
-                include: {
-                    location: true,
-                    amenities: true
-                }
-            });
+            };
         }
+        const spots = await prisma.campspot.findMany({
+            where,
+            include: {
+                location: true,
+                amenities: true
+            }
+        });
 
         return res.status(200).json(spots);
     } catch (error) {
@@ -169,7 +128,7 @@ router.get('/:id', authenticateToken, async (req, res, next) => {
             return res.status(400).json({ message: 'Invalid campspot ID' });
         }
 
-        // Fetch spot with location and amenities and reviews
+        // Fetch spot with location, amenities, reviews, and owner info
         const spot = await prisma.campspot.findUnique({
             where: {
                 campspot_id: id
@@ -185,17 +144,18 @@ router.get('/:id', authenticateToken, async (req, res, next) => {
                             }
                         }
                     }
+                },
+                owner: {
+                    select: {
+                        user_name: true,
+                        email: true
+                    }
                 }
             }
         });
 
         if (!spot) {
             return res.status(404).json({ message: 'Spot not found' });
-        }
-
-        // Allow access only to owner OR allow public view — here I assume owner-only view (consistent with old `/profile`)
-        if (spot.owner_id !== req.user.user_id) {
-            return res.status(403).json({ message: 'Not authorized to view this campspot' });
         }
 
         return res.status(200).json(spot);
@@ -205,19 +165,6 @@ router.get('/:id', authenticateToken, async (req, res, next) => {
     }
 });
 
-// Helper function to calculate distance between two points using Haversine formula
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Radius of the earth in km
-    const dLat = deg2rad(lat2 - lat1);
-    const dLon = deg2rad(lon2 - lon1);
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Distance in km
-    return Math.round(distance * 10) / 10; // Round to 1 decimal place
-}
 
 function deg2rad(deg) {
     return deg * (Math.PI / 180);

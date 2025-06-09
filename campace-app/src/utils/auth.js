@@ -19,5 +19,11 @@ export const authUtils = {
     getAuthHeaders() {
         const token = this.getToken()
         return token ? { 'Authorization': `Bearer ${token}` } : {}
+    },
+
+    // Get the user object from localStorage
+    getUser() {
+        const user = localStorage.getItem('user');
+        return user ? JSON.parse(user) : null;
     }
 }

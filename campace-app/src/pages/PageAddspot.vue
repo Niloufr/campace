@@ -124,6 +124,8 @@
   </template>
   
   <script>
+  import { authUtils } from '@/utils/auth'
+
   export default {
     name: 'CampspotCreator',
     data() {
@@ -164,7 +166,11 @@
     methods: {
       async fetchLocations() {
         try {
-          const res = await fetch('http://localhost:3000/locations', {credentials: 'include'});
+          const res = await fetch('http://localhost:3000/locations', {
+            headers: {
+              ...authUtils.getAuthHeaders()
+            }
+          });
           const data = await res.json();
           this.locations = data;
         } catch (error) {
@@ -198,17 +204,17 @@
         try {
           const res = await fetch(`http://localhost:3000/locations/${this.locationToDelete.location_id}`, {
             method: 'DELETE',
-            credentials: 'include'
+            headers: {
+              ...authUtils.getAuthHeaders()
+            }
           });
           
           if (!res.ok) throw await res.json();
           
-          // Remove the deleted location from the array
           this.locations = this.locations.filter(
             location => location.location_id !== this.locationToDelete.location_id
           );
           
-          // If the deleted location was selected, reset the selection
           if (this.campspot.location_id === this.locationToDelete.location_id) {
             this.campspot.location_id = null;
           }
@@ -226,7 +232,6 @@
             return this.$toast.error('Please select a location first');
           }
           
-          // Convert numeric fields to numbers before sending to API
           const campspotData = {
             ...this.campspot,
             location_id: Number(this.campspot.location_id),
@@ -236,9 +241,11 @@
           
           const res = await fetch('http://localhost:3000/campspots', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(campspotData),
-            credentials: 'include'
+            headers: { 
+              'Content-Type': 'application/json',
+              ...authUtils.getAuthHeaders()
+            },
+            body: JSON.stringify(campspotData)
           });
           
           if (!res.ok) throw await res.json();
@@ -253,7 +260,6 @@
       
       async submitLocation() {
         try {
-          // Convert postal code to string to ensure consistency
           const locationData = {
             ...this.newLocation,
             postal_code: String(this.newLocation.postal_code)
@@ -261,20 +267,22 @@
           
           let res;
           if (this.editMode) {
-            // Update existing location
             res = await fetch(`http://localhost:3000/locations/${locationData.location_id}`, {
               method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(locationData),
-              credentials: 'include'
+              headers: { 
+                'Content-Type': 'application/json',
+                ...authUtils.getAuthHeaders()
+              },
+              body: JSON.stringify(locationData)
             });
           } else {
-            // Create new location
             res = await fetch('http://localhost:3000/locations', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(locationData),
-              credentials: 'include'
+              headers: { 
+                'Content-Type': 'application/json',
+                ...authUtils.getAuthHeaders()
+              },
+              body: JSON.stringify(locationData)
             });
           }
           
@@ -282,13 +290,11 @@
           const data = await res.json();
           
           if (this.editMode) {
-            // Update the location in the array
             const index = this.locations.findIndex(loc => loc.location_id === data.location_id);
             if (index !== -1) {
               this.locations.splice(index, 1, data);
             }
           } else {
-            // Add the new location to the array and select it
             this.locations.push(data);
             this.campspot.location_id = data.location_id;
           }

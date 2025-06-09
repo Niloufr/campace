@@ -1,167 +1,235 @@
 <template>
   <v-app>
-  <div id="app">
-    <header>
-      <h1>Campace</h1>
-      <nav>
-        <button @click="setActivePage('home')">Home</button>
-        <button @click="setActivePage('explore')">Explore</button>
-        <button v-if="isLoggedIn" @click="setActivePage('addspot')">Add Spot</button>
-        <button v-if="isLoggedIn" @click="setActivePage('mytrips')">My Trips</button>
-        <button v-if="isLoggedIn" @click="setActivePage('spot-overview')">My Camping Spots</button>
-        <button v-if="isLoggedIn" @click="setActivePage('profile')">Profile</button>
-        <button v-if="!isLoggedIn" @click="setActivePage('login')">Login</button>
-        <button v-if="!isLoggedIn" @click="setActivePage('create-account')">Sign Up</button>
-        <button v-if="isLoggedIn" @click="logout">Logout</button>
-      </nav>
-    </header>
+    <!-- App Bar -->
+    <v-app-bar app color="primary" dark>
+      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-toolbar-title>
+        <router-link to="/" class="white--text text-decoration-none">CampAce</router-link>
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn text v-if="!isLoggedIn" @click="$router.push('/login')">Login</v-btn>
+      <v-btn text v-if="!isLoggedIn" @click="$router.push('/create-account')">Sign Up</v-btn>
+      <v-btn text v-if="isLoggedIn" @click="logout">Logout</v-btn>
+    </v-app-bar>
 
-    <main>
-      <!-- Render the active page component based on activePage value -->
-      <PageHome v-if="activePage === 'home'" />
-      <PageExplore v-else-if="activePage === 'explore'" />
-      <PageAddspot v-else-if="activePage === 'addspot'" />
-      <PageMyTrips v-else-if="activePage === 'mytrips'" />
-      <PageProfile v-else-if="activePage === 'profile'" />
-      <PageLogin v-else-if="activePage === 'login'" @login-success="handleLoginSuccess" />
-      <PageCreateAccount v-else-if="activePage === 'create-account'" @account-created="handleAccountCreated" />
-      <PageCampSpot v-else-if="activePage === 'camp-spot'" :spotId="selectedSpotId" />
-      <PageSpotOverview v-else-if="activePage === 'spot-overview'" />
-      
-      <!-- Default content if no page is selected -->
-      <div v-else class="welcome-content">
-        <h2>Welcome to Campace!</h2>
-        <p>Your ultimate camping companion. Find and share the best camping spots.</p>
-        <button class="cta-button" @click="setActivePage('explore')">Start Exploring</button>
-      </div>
-    </main>
+    <!-- Navigation Drawer -->
+    <v-navigation-drawer v-model="drawer" app>
+      <v-list>
+        <v-list-item to="/" exact>
+          <v-list-item-icon><v-icon>mdi-home</v-icon></v-list-item-icon>
+          <v-list-item-content><v-list-item-title>Home</v-list-item-title></v-list-item-content>
+        </v-list-item>
 
-    <footer>
-      <p>&copy; 2025 CampAce. All rights reserved.</p>
-    </footer>
-  </div>
-</v-app>
+        <v-list-item to="/spot-overview" v-if="isLoggedIn">
+          <v-list-item-icon><v-icon>mdi-tent</v-icon></v-list-item-icon>
+          <v-list-item-content><v-list-item-title>My Spots</v-list-item-title></v-list-item-content>
+        </v-list-item>
+
+        <v-list-item to="/my-trips" v-if="isLoggedIn">
+          <v-list-item-icon><v-icon>mdi-calendar</v-icon></v-list-item-icon>
+          <v-list-item-content><v-list-item-title>My Trips</v-list-item-title></v-list-item-content>
+        </v-list-item>
+
+        <v-list-item to="/owner/bookings" v-if="isLoggedIn">
+          <v-list-item-icon><v-icon>mdi-book-open</v-icon></v-list-item-icon>
+          <v-list-item-content><v-list-item-title>Owner Bookings</v-list-item-title></v-list-item-content>
+        </v-list-item>
+
+        <v-list-item to="/profile" v-if="isLoggedIn">
+          <v-list-item-icon><v-icon>mdi-account</v-icon></v-list-item-icon>
+          <v-list-item-content><v-list-item-title>Profile</v-list-item-title></v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <!-- Main Content -->
+    <v-main>
+      <v-container fluid class="pa-4">
+        <router-view @login-success="handleLoginSuccess" @account-created="handleAccountCreated"></router-view>
+      </v-container>
+    </v-main>
+
+    <!-- Footer -->
+    <v-footer app color="primary" dark>
+      <v-row justify="center" no-gutters>
+        <v-col class="text-center" cols="12">
+          {{ new Date().getFullYear() }} — <strong>CampAce</strong>
+        </v-col>
+      </v-row>
+    </v-footer>
+  </v-app>
 </template>
 
 <script>
-import PageAddspot from './pages/PageAddspot.vue';
-import PageCampSpot from './pages/PageCampSpot.vue';
-import PageCreateAccount from './pages/PageCreateAccount.vue';
-import PageExplore from './pages/PageExplore.vue';
-import PageHome from './pages/PageHome.vue';
-import PageLogin from './pages/PageLogin.vue';
-import PageMyTrips from './pages/PageMyTrips.vue';
-import PageProfile from './pages/PageProfile.vue';
-import PageSpotOverview from './pages/PageSpotOverview.vue';
+import { authUtils } from './utils/auth';
 
-// Export
 export default {
   name: 'App',
   data() {
     return {
-      activePage: "", // Default to home page
+      drawer: false,
       isLoggedIn: false,
-      selectedSpotId: null
+      currentUser: null,
+      refreshIntervalId: null
     }
   },
-  components: {
-    PageAddspot,
-    PageCampSpot,
-    PageCreateAccount,
-    PageExplore,
-    PageHome,
-    PageLogin,
-    PageMyTrips,
-    PageProfile,
-    PageSpotOverview
-  },
   methods: {
-    setActivePage(page) {
-      this.activePage = page;
-    },
-    handleLoginSuccess() {
+    handleLoginSuccess(userData) {
+      if (!userData || !userData.token) {
+        console.error('Login failed: No token received');
+        this.$toast.error('Login failed: Please try again');
+        return;
+      }
+      
       this.isLoggedIn = true;
-      this.setActivePage('home');
+      this.currentUser = userData;
+      authUtils.setToken(userData.token); // store token
+      localStorage.setItem('user', JSON.stringify(userData)); // optional, in case you want user info
+      
+      console.log('Token stored:', authUtils.getToken()); // Debug log
+      
+      this.$toast.success(`Welcome back, ${userData.user_name}!`);
+      this.setTokenRefresh();
+      this.$router.push('/');
     },
     handleAccountCreated() {
-      this.setActivePage('login');
+      this.$toast.success('Account created successfully! Please log in.');
+      this.$router.push('/login');
     },
     logout() {
+      authUtils.removeToken();
+      localStorage.removeItem('user');
       this.isLoggedIn = false;
-      this.setActivePage('home');
+      this.currentUser = null;
+      if (this.refreshIntervalId) {
+        clearInterval(this.refreshIntervalId);
+        this.refreshIntervalId = null;
+      }
+      this.$toast.info('Logged out');
+      if (this.$route.path !== '/') {
+        this.$router.push('/');
+      }
     },
-    viewCampSpot(spotId) {
-      this.selectedSpotId = spotId;
-      this.setActivePage('camp-spot');
+    async refreshTokenSilently() {
+      try {
+        const response = await fetch('http://localhost:3000/users/refresh-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...authUtils.getAuthHeaders()
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          authUtils.setToken(data.token);
+          this.$toast.info('Session refreshed');
+        }
+      } catch (err) {
+        console.error('Silent token refresh failed:', err);
+        // Optionally logout on failure
+        this.logout();
+      }
+    },
+    setTokenRefresh() {
+      // Refresh token every 23 hours (23 * 60 * 60 * 1000 ms)
+      if (this.refreshIntervalId) clearInterval(this.refreshIntervalId);
+      this.refreshIntervalId = setInterval(() => {
+        this.refreshTokenSilently();
+      }, 23 * 60 * 60 * 1000);
+    },
+    checkAuthStatus() {
+      if (authUtils.isAuthenticated()) {
+        const user = authUtils.getUser();
+        if (user) {
+          this.isLoggedIn = true;
+          this.currentUser = user;
+          this.setTokenRefresh();
+        } else {
+          this.logout();
+        }
+      }
+    }
+  },
+  created() {
+    // Check for JWT token in localStorage or via authUtils on app load
+    const token = authUtils.getToken();
+    if (token) {
+      const user = authUtils.getUser();
+      this.isLoggedIn = true;
+      this.currentUser = user;
+      this.setTokenRefresh();
+    } else {
+      this.isLoggedIn = false;
+      this.currentUser = null;
     }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+.v-application {
+  font-family: 'Roboto', sans-serif !important;
 }
 
-header {
-  padding: 20px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #eaeaea;
+.page-title {
+  font-size: 2rem;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  color: var(--v-primary-base);
 }
 
-nav {
-  display: flex;
-  gap: 15px;
-}
-
-button {
-  background-color: #f0f0f0;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
+.card-hover {
+  transition: transform 0.2s;
   cursor: pointer;
-  transition: background-color 0.3s;
 }
 
-button:hover {
-  background-color: #dcdcdc;
+.card-hover:hover {
+  transform: translateY(-5px);
 }
 
-main {
-  min-height: 70vh;
-  padding: 30px 0;
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  color: var(--v-primary-base);
 }
 
-.welcome-content {
-  text-align: center;
-  padding: 50px 0;
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.cta-button {
-  background-color: #4CAF50;
-  color: white;
-  padding: 12px 24px;
-  font-size: 16px;
-  margin-top: 20px;
+.list-container {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.cta-button:hover {
-  background-color: #45a049;
+.detail-container {
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-footer {
-  text-align: center;
-  padding: 20px 0;
-  border-top: 1px solid #eaeaea;
-  margin-top: 30px;
-  color: #666;
+.text-primary {
+  color: var(--v-primary-base) !important;
+}
+
+.text-secondary {
+  color: var(--v-secondary-base) !important;
+}
+
+.bg-light {
+  background-color: #f5f5f5 !important;
+}
+
+.rounded-card {
+  border-radius: 8px !important;
+}
+
+.elevation-hover {
+  transition: box-shadow 0.3s;
+}
+
+.elevation-hover:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
 }
 </style>

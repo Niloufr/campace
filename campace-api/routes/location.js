@@ -26,36 +26,11 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// Helper to get lat/lng from Google Maps Geocoding API
-const fetchLatLng = async (address, city, country) => {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-    if (!apiKey) throw new Error('Google Maps API key not set');
-
-    const query = encodeURIComponent(`${address}, ${city}, ${country}`);
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${apiKey}`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (data.status === 'OK' && data.results.length > 0) {
-        const loc = data.results[0].geometry.location;
-        return { latitude: loc.lat, longitude: loc.lng };
-    }
-
-    throw new Error('Could not geocode address');
-};
 
 // Add new location (protected)
 router.post('/', authenticateToken, async (req, res, next) => {
     try {
         const locationData = req.body;
-        let latLng = { latitude: null, longitude: null };
-
-        try {
-            latLng = await fetchLatLng(locationData.address, locationData.city, locationData.country);
-        } catch (e) {
-            // If geocoding fails, continue with nulls
-        }
 
         const newLocation = await prisma.location.create({
             data: {
@@ -65,8 +40,6 @@ router.post('/', authenticateToken, async (req, res, next) => {
                 country: locationData.country,
                 postal_code: parseInt(locationData.postal_code),
                 owner_id: req.user.user_id,
-                latitude: latLng.latitude,
-                longitude: latLng.longitude
             }
         });
 

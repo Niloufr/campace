@@ -232,7 +232,9 @@
   </template>
   
   <script>
-  export default {
+import { authUtils } from '@/utils/auth'
+
+export default {
     name: 'OwnerSpotsOverview',
     data() {
       return {
@@ -287,7 +289,11 @@
         this.error = null;
         
         try {
-          const response = await fetch("http://localhost:3000/campspots", {credentials: 'include'});
+          const response = await fetch("http://localhost:3000/campspots", {
+            headers: {
+              ...authUtils.getAuthHeaders()
+            }
+          });
           
           if (!response.ok) {
             const errorData = await response.json();
@@ -310,7 +316,11 @@
       
       async fetchAmenities(campspotId) {
         try {
-          const response = await fetch(`http://localhost:3000/amenities/?campspot_id=${campspotId}`, {credentials: 'include'});
+          const response = await fetch(`http://localhost:3000/amenities/?campspot_id=${campspotId}`, {
+            headers: {
+              ...authUtils.getAuthHeaders()
+            }
+          });
           
           if (!response.ok) {
             throw new Error('Failed to fetch amenities');
@@ -320,7 +330,6 @@
           this.$set(this.spotAmenities, campspotId, amenities);
         } catch (error) {
           console.error(`Error fetching amenities for spot ${campspotId}:`, error);
-          // Set empty array in case of error
           this.$set(this.spotAmenities, campspotId, []);
         }
       },
@@ -351,10 +360,10 @@
         
         try {
           const response = await fetch('http://localhost:3000/amenities', {
-            credentials: 'include',
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              ...authUtils.getAuthHeaders()
             },
             body: JSON.stringify(this.newAmenity)
           });
@@ -394,7 +403,9 @@
         try {
           const response = await fetch(`http://localhost:3000/amenities/${this.amenityToDelete.amenity_id}`, {
             method: 'DELETE',
-            credentials: 'include'
+            headers: {
+              ...authUtils.getAuthHeaders()
+            }
           });
           
           if (!response.ok) {
@@ -429,7 +440,9 @@
         try {
           const response = await fetch(`http://localhost:3000/campspots/${this.spotToDelete.campspot_id}`, {
             method: 'DELETE',
-            credentials: 'include'
+            headers: {
+              ...authUtils.getAuthHeaders()
+            }
           });
           
           if (!response.ok) {
