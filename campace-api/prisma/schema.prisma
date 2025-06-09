@@ -8,16 +8,18 @@ datasource db {
 }
 
 model User {
-  user_id     Int        @id @default(autoincrement())
-  user_name   String     @db.VarChar(255)
-  email       String     @unique
-  password    String
-  date_joined DateTime   @default(now())
-  role        Role       @default(USER)
-  bookings    Booking[]
-  reviews     Review[]
-  campspot    Campspot[]
-  locations   Location[]
+  user_id           Int        @id @default(autoincrement())
+  user_name         String     @db.VarChar(255)
+  email             String     @unique
+  password          String
+  date_joined       DateTime   @default(now())
+  security_question String?
+  security_answer   String?
+  role              Role       @default(USER)
+  bookings          Booking[]
+  reviews           Review[]
+  campspot          Campspot[]
+  locations         Location[]
 }
 
 model Campspot {
@@ -57,6 +59,8 @@ model Location {
   province_or_state String?
   country           String
   postal_code       Int
+  latitude          Float?
+  longitude         Float?
   campspot          Campspot[]
   owner             User       @relation(fields: [owner_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -75,7 +79,6 @@ model Booking {
   user         User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
   campspot     Campspot @relation(fields: [campspot_id], references: [campspot_id], onDelete: Cascade, onUpdate: Cascade)
 
-  @@unique([campspot_id, startDate, endDate]) //to avoid double booking of the same spot in the same time
   @@index([campspot_id]) // checking the bookings of a campspot
   @@index([status]) // to filter based on the booking status
   @@index([startDate, endDate]) // to check availability dates
