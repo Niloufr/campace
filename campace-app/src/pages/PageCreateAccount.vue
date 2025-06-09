@@ -246,13 +246,7 @@ export default {
           this.success = 'Account created successfully! You can now log in.'
           this.clear()
           this.$emit('account-created', data)
-          
-          // Optionally redirect to login after a delay
-          setTimeout(() => {
-            if (this.$router) {
-              this.$router.push('/login')
-            }
-          }, 2000)
+          // Removed redundant router.push('/login') to avoid navigation duplication error
         } else {
           this.error = data.message || 'Failed to create account'
         }
