@@ -2,13 +2,13 @@
     <v-container>
       <v-row>
         <v-col cols="12">
-          <v-card class="mb-6">
+          <v-card class="mb-6 overview-header-card">
             <v-card-title class="headline primary white--text">
               My Camping Spots
             </v-card-title>
-            <v-card-subtitle class="py-2">
+            <v-card-text class="overview-header-subtitle">
               Manage all your registered camping spots
-            </v-card-subtitle>
+            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
@@ -484,8 +484,20 @@ export default {
   .v-card {
     transition: transform 0.2s, box-shadow 0.2s;
   }
-  .v-card:hover {
+  .v-card:hover:not(.overview-header-card) {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+  }
+  .overview-header-card {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07) !important;
+    transition: none;
+  }
+  .overview-header-subtitle {
+    padding-left: 24px;
+    padding-bottom: 12px;
+    font-size: 1.08rem;
+    color: #6c584c;
+    font-weight: 500;
+    letter-spacing: 0.01em;
   }
   </style>

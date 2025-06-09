@@ -128,7 +128,6 @@
               <v-card-title>{{ location.city }}, {{ location.country }}</v-card-title>
               <v-card-text>
                 <div class="text-subtitle-1">{{ location.campspotCount }} camping spots</div>
-                <div class="text-body-2">{{ location.address }}</div>
               </v-card-text>
             </v-card>
           </v-col>

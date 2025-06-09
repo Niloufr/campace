@@ -321,4 +321,26 @@ router.post('/refresh-token', authenticateToken, (req, res) => {
   }
 });
 
+// Public route: Get user by ID (returns user_name and email only)
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await prisma.user.findUnique({
+      where: { user_id: parseInt(id) },
+      select: {
+        user_id: true,
+        user_name: true,
+        email: true
+      }
+    });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Error fetching user by id:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

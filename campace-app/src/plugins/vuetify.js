@@ -4,15 +4,20 @@ import Vuetify from 'vuetify';
 Vue.use(Vuetify);
 
 export default new Vuetify({
-    themes: {
-        light: {
-            primary: '#1976D2',
-            secondary: '#424242',
-            accent: '#82B1FF',
-            error: '#FF5252',
-            info: '#2196F3',
-            success: '#4CAF50',
-            warning: '#FFC107'
+    theme: {
+        themes: {
+            light: {
+                primary: '#adc178',    // earthy green
+                secondary: '#a98467',  // brown
+                accent: '#dde5b6',     // light green
+                background: '#f0ead2', // cream
+                surface: '#fff',
+                text: '#6c584c',       // dark brown
+                error: '#FF5252',
+                info: '#2196F3',
+                success: '#4CAF50',
+                warning: '#FFC107'
+            }
         }
     }
 });

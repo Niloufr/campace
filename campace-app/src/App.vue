@@ -1,10 +1,13 @@
 <template>
   <v-app>
     <!-- App Bar -->
-    <v-app-bar app color="primary" dark>
+    <v-app-bar app>
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title>
-        <router-link to="/" class="white--text text-decoration-none">CampAce</router-link>
+        <router-link to="/" class="white--text text-decoration-none">
+          <img src="@/assets/campace-logo.png" alt="CampAce Logo" style="height:40px;vertical-align:middle;margin-right:8px;" />
+          Campace
+        </router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn text v-if="!isLoggedIn" @click="$router.push('/login')">Login</v-btn>
@@ -50,10 +53,10 @@
     </v-main>
 
     <!-- Footer -->
-    <v-footer app color="primary" dark>
+    <v-footer app>
       <v-row justify="center" no-gutters>
         <v-col class="text-center" cols="12">
-          {{ new Date().getFullYear() }} — <strong>CampAce</strong>
+          © {{ new Date().getFullYear() }} — <strong>Campace</strong>. All rights reserved.
         </v-col>
       </v-row>
     </v-footer>
@@ -167,15 +170,71 @@ export default {
 </script>
 
 <style>
+:root {
+  --primary: #adc178;
+  --secondary: #a98467;
+  --accent: #dde5b6;
+  --background: #f0ead2;
+  --surface: #fff;
+  --text: #6c584c;
+}
+
 .v-application {
   font-family: 'Roboto', sans-serif !important;
+  background-color: var(--background) !important;
+  color: var(--text) !important;
+}
+
+.v-app-bar {
+  background-color: var(--secondary) !important;
+  color: var(--background) !important;
+}
+
+.v-navigation-drawer {
+  background-color: var(--accent) !important;
+  color: var(--text) !important;
+}
+
+.v-list-item {
+  color: var(--text) !important;
+}
+
+.v-list-item--active {
+  background-color: var(--primary) !important;
+  color: var(--surface) !important;
+}
+
+.v-btn[color="primary"], .v-btn.primary {
+  background-color: var(--primary) !important;
+  color: var(--surface) !important;
+}
+
+.v-btn[color="secondary"], .v-btn.secondary {
+  background-color: var(--secondary) !important;
+  color: var(--surface) !important;
+}
+
+.v-footer {
+  background-color: var(--secondary) !important;
+  color: var(--background) !important;
+}
+
+.v-card {
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(172, 193, 120, 0.08);
+}
+
+.v-icon {
+  color: var(--primary) !important;
 }
 
 .page-title {
   font-size: 2rem;
   font-weight: 500;
   margin-bottom: 2rem;
-  color: var(--v-primary-base);
+  color: var(--primary);
 }
 
 .card-hover {
@@ -185,18 +244,23 @@ export default {
 
 .card-hover:hover {
   transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(172, 193, 120, 0.18) !important;
 }
 
 .section-title {
   font-size: 1.5rem;
   font-weight: 500;
   margin-bottom: 1.5rem;
-  color: var(--v-primary-base);
+  color: var(--secondary);
 }
 
 .form-container {
   max-width: 600px;
   margin: 0 auto;
+  background: var(--accent);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 4px 16px rgba(172, 193, 120, 0.08);
 }
 
 .list-container {
@@ -210,15 +274,15 @@ export default {
 }
 
 .text-primary {
-  color: var(--v-primary-base) !important;
+  color: var(--primary) !important;
 }
 
 .text-secondary {
-  color: var(--v-secondary-base) !important;
+  color: var(--secondary) !important;
 }
 
 .bg-light {
-  background-color: #f5f5f5 !important;
+  background-color: var(--background) !important;
 }
 
 .rounded-card {
@@ -230,6 +294,6 @@ export default {
 }
 
 .elevation-hover:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 4px 8px rgba(172, 193, 120, 0.18) !important;
 }
 </style>

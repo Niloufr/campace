@@ -78,6 +78,12 @@ const routes = [
         name: 'OwnerBookings',
         component: () => import('./pages/PageOwnerBookings.vue'),
         meta: { requiresAuth: true, requiresOwner: true }
+    },
+    {
+        path: '/owner/availability/:id',
+        name: 'OwnerAvailability',
+        component: () => import('./pages/PageOwnerAvailability.vue'),
+        meta: { requiresAuth: true, requiresOwner: true }
     }
 ]
 

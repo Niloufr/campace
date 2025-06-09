@@ -77,27 +77,6 @@
             <div v-else>
               <v-divider class="my-4"></v-divider>
               <div class="font-weight-bold mb-2">Availability</div>
-              <v-simple-table>
-                <thead>
-                  <tr>
-                    <th>From</th>
-                    <th>To</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="booking in bookings" :key="booking.booking_id">
-                    <td>{{ formatDate(booking.startDate) }}</td>
-                    <td>{{ formatDate(booking.endDate) }}</td>
-                    <td>{{ booking.status }}</td>
-                  </tr>
-                  <tr v-if="!bookings.length">
-                    <td colspan="3" class="text-center">This spot is fully available.</td>
-                  </tr>
-                </tbody>
-              </v-simple-table>
-              <v-divider class="my-4"></v-divider>
-              <div class="font-weight-bold mb-2">Book this spot</div>
               <v-form @submit.prevent="bookSpot">
                 <v-row>
                   <v-col cols="12" md="5">
@@ -105,7 +84,12 @@
                       <template v-slot:activator="{ on, attrs }">
                         <v-text-field v-model="bookingForm.startDate" label="Start Date" prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
                       </template>
-                      <v-date-picker v-model="bookingForm.startDate" @input="startMenu = false"></v-date-picker>
+                      <v-date-picker
+                        v-model="bookingForm.startDate"
+                        :allowed-dates="allowedStartDates"
+                        :min="today"
+                        @input="startMenu = false"
+                      ></v-date-picker>
                     </v-menu>
                   </v-col>
                   <v-col cols="12" md="5">
@@ -113,7 +97,12 @@
                       <template v-slot:activator="{ on, attrs }">
                         <v-text-field v-model="bookingForm.endDate" label="End Date" prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
                       </template>
-                      <v-date-picker v-model="bookingForm.endDate" @input="endMenu = false"></v-date-picker>
+                      <v-date-picker
+                        v-model="bookingForm.endDate"
+                        :allowed-dates="allowedEndDates"
+                        :min="bookingForm.startDate || today"
+                        @input="endMenu = false"
+                      ></v-date-picker>
                     </v-menu>
                   </v-col>
                   <v-col cols="12" md="2" class="d-flex align-end">
@@ -208,10 +197,22 @@ export default {
       reviewSuccess: '',
       reviews: [],
       currentUserId: null,
+      today: new Date().toISOString().substr(0, 10),
     }
   },
   created() {
     this.fetchSpot();
+  },
+  computed: {
+    bookedDateRanges() {
+      // Only consider non-cancelled bookings
+      return this.bookings
+        .filter(b => b.status !== 'cancelled')
+        .map(b => ({
+          start: b.startDate ? b.startDate.substr(0, 10) : '',
+          end: b.endDate ? b.endDate.substr(0, 10) : ''
+        }));
+    }
   },
   methods: {
     async fetchSpot() {
@@ -390,7 +391,24 @@ export default {
       } catch (e) {
         this.$toast?.error?.('Failed to delete review.');
       }
-    }
+    },
+    allowedStartDates(date) {
+      // Only allow today or later, and not in any booked range
+      if (date < this.today) return false;
+      for (const range of this.bookedDateRanges) {
+        if (date >= range.start && date <= range.end) return false;
+      }
+      return true;
+    },
+    allowedEndDates(date) {
+      // Only allow end date after start date, not in any booked range
+      if (!this.bookingForm.startDate) return false;
+      if (date < this.bookingForm.startDate) return false;
+      for (const range of this.bookedDateRanges) {
+        if (date >= range.start && date <= range.end) return false;
+      }
+      return true;
+    },
   }
 }
 </script>
