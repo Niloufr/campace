@@ -79,14 +79,15 @@ export default {
     async fetchSpots() {
       this.loading = true;
       let url = new URL('http://localhost:3000/campspots/search');
-      const { city, country, minPrice, maxPrice, amenities, minSpots, maxSpots } = this.$route.query;
+      const { city, country, minPrice, maxPrice, minCapacity, maxCapacity, amenities } = this.$route.query;
       if (city) url.searchParams.append('city', city);
       if (country) url.searchParams.append('country', country);
       if (minPrice) url.searchParams.append('minPrice', minPrice);
       if (maxPrice) url.searchParams.append('maxPrice', maxPrice);
+      // Prefer minCapacity/maxCapacity, fallback to minSpots/maxSpots for compatibility
+      if (minCapacity) url.searchParams.append('minCapacity', minCapacity);
+      if (maxCapacity) url.searchParams.append('maxCapacity', maxCapacity);
       if (amenities) url.searchParams.append('amenities', amenities);
-      if (minSpots) url.searchParams.append('minSpots', minSpots);
-      if (maxSpots) url.searchParams.append('maxSpots', maxSpots);
       try {
         const res = await fetch(url, {
           headers: {

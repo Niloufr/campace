@@ -86,7 +86,7 @@ router.get('/', authenticateToken, async (req, res, next) => {
 
 router.get('/search', async (req, res, next) => {
     try {
-        const { city, country, minPrice, maxPrice, amenities, minSpots, maxSpots } = req.query;
+        const { city, country, minPrice, maxPrice, amenities, minCapacity, maxCapacity } = req.query;
         const where = {
             location: {
                 ...(city && { city: { contains: city } }),
@@ -95,13 +95,13 @@ router.get('/search', async (req, res, next) => {
         };
         if (minPrice) where.price_per_night = { ...where.price_per_night, gte: parseFloat(minPrice) };
         if (maxPrice) where.price_per_night = { ...where.price_per_night, lte: parseFloat(maxPrice) };
-        if (minSpots) where.capacity = { ...where.capacity, gte: parseInt(minSpots) };
-        if (maxSpots) where.capacity = { ...where.capacity, lte: parseInt(maxSpots) };
+        if (minCapacity) where.capacity = { ...where.capacity, gte: parseInt(minCapacity) };
+        if (maxCapacity) where.capacity = { ...where.capacity, lte: parseInt(maxCapacity) };
         if (amenities) {
             const amenityList = amenities.split(',');
             where.amenities = {
                 some: {
-                    name: { in: amenityList }
+                    amenity_name: { in: amenityList }
                 }
             };
         }
@@ -162,6 +162,59 @@ router.get('/:id', authenticateToken, async (req, res, next) => {
     } catch (error) {
         console.error('Error fetching single campspot:', error);
         return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// Update a campspot (protected, owner only)
+router.put('/:id', authenticateToken, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'Invalid campspot ID' });
+        }
+        // Only allow owner to update
+        const spot = await prisma.campspot.findUnique({ where: { campspot_id: id } });
+        if (!spot) return res.status(404).json({ message: 'Spot not found' });
+        if (spot.owner_id !== req.user.user_id) {
+            return res.status(403).json({ message: 'Not authorized to update this spot' });
+        }
+        // Only allow updating scalar fields, not nested location
+        const { name, description, price_per_night, capacity } = req.body;
+        const updateData = {
+            ...(name !== undefined && { name }),
+            ...(description !== undefined && { description }),
+            ...(price_per_night !== undefined && { price_per_night: Number(price_per_night) }),
+            ...(capacity !== undefined && { capacity: Number(capacity) })
+        };
+        const updated = await prisma.campspot.update({
+            where: { campspot_id: id },
+            data: updateData
+        });
+        res.json(updated);
+    } catch (error) {
+        console.error('Error updating campspot:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// Delete a campspot (protected, owner only)
+router.delete('/:id', authenticateToken, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'Invalid campspot ID' });
+        }
+        // Only allow owner to delete
+        const spot = await prisma.campspot.findUnique({ where: { campspot_id: id } });
+        if (!spot) return res.status(404).json({ message: 'Spot not found' });
+        if (spot.owner_id !== req.user.user_id) {
+            return res.status(403).json({ message: 'Not authorized to delete this spot' });
+        }
+        await prisma.campspot.delete({ where: { campspot_id: id } });
+        res.json({ message: 'Campspot deleted' });
+    } catch (error) {
+        console.error('Error deleting campspot:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 

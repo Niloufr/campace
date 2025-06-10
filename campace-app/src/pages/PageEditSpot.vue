@@ -208,22 +208,45 @@ export default {
             description: this.form.description,
             price_per_night: this.form.price_per_night,
             capacity: this.form.capacity,
-            location: this.form.location,
           })
         });
         if (!res.ok) throw new Error('Failed to update spot');
-        
-        // Update amenities (optional: you may want to sync with backend)
-        await fetch(`http://localhost:3000/amenities/bulk-update/${id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            ...authUtils.getAuthHeaders()
-          },
-          body: JSON.stringify({ amenities: this.form.amenities })
+
+        // --- Sync amenities ---
+        // Fetch current amenities from backend
+        const amenitiesRes = await fetch(`http://localhost:3000/amenities?campspot_id=${id}`, {
+          headers: { ...authUtils.getAuthHeaders() }
         });
+        const currentAmenities = (amenitiesRes.ok ? await amenitiesRes.json() : []).map(a => a.amenity_name);
+        const newAmenities = this.form.amenities;
+        // Add new amenities
+        for (const amenity of newAmenities) {
+          if (!currentAmenities.includes(amenity)) {
+            await fetch('http://localhost:3000/amenities', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...authUtils.getAuthHeaders()
+              },
+              body: JSON.stringify({ campspot_id: Number(id), amenity_name: amenity })
+            });
+          }
+        }
+        // Remove unchecked amenities
+        for (const amenity of currentAmenities) {
+          if (!newAmenities.includes(amenity)) {
+            // Find amenity_id for this amenity
+            const amenityObj = (amenitiesRes.ok ? await amenitiesRes.json() : []).find(a => a.amenity_name === amenity);
+            if (amenityObj) {
+              await fetch(`http://localhost:3000/amenities/${amenityObj.amenity_id}`, {
+                method: 'DELETE',
+                headers: { ...authUtils.getAuthHeaders() }
+              });
+            }
+          }
+        }
         this.showSnackbar('Spot updated successfully', 'success');
-        setTimeout(() => this.$router.push('/owner/spots'), 1200);
+        setTimeout(() => this.$router.push('/spot-overview'), 1200);
       } catch (e) {
         this.showSnackbar('Failed to update spot', 'error');
       } finally {

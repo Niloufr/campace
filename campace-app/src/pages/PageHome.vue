@@ -187,13 +187,21 @@ export default {
       maxPrice: null,
       selectedAmenities: [],
       amenityOptions: [
-        { text: 'WiFi', value: 'wifi' },
-        { text: 'Toilets', value: 'toilets' },
-        { text: 'Showers', value: 'showers' },
-        { text: 'Electricity', value: 'electricity' },
-        { text: 'Water', value: 'water' },
-        { text: 'Fire Pit', value: 'fire_pit' },
-        { text: 'Picnic Table', value: 'picnic_table' }
+        { text: 'Wifi', value: 'Wifi' },
+        { text: 'Shower', value: 'Shower' },
+        { text: 'Toilets', value: 'Toilets' },
+        { text: 'Electricity', value: 'Electricity' },
+        { text: 'Water', value: 'Water' },
+        { text: 'Fireplace', value: 'Fireplace' },
+        { text: 'Picnic Table', value: 'Picnic Table' },
+        { text: 'BBQ Grill', value: 'BBQ Grill' },
+        { text: 'Parking', value: 'Parking' },
+        { text: 'Pet Friendly', value: 'Pet Friendly' },
+        { text: 'Kitchen', value: 'Kitchen' },
+        { text: 'Wheelchair Accessible', value: 'Wheelchair Accessible' },
+        { text: 'Laundry', value: 'Laundry' },
+        { text: 'Swimming Pool', value: 'Swimming Pool' },
+        { text: 'Playground', value: 'Playground' }
       ],
       minSpots: null,
       maxSpots: null,
@@ -256,11 +264,11 @@ export default {
       const queryParams = new URLSearchParams();
       if (this.city) queryParams.append('city', this.city);
       if (this.country) queryParams.append('country', this.country);
-      if (this.minPrice !== null) queryParams.append('minPrice', this.minPrice);
-      if (this.maxPrice !== null) queryParams.append('maxPrice', this.maxPrice);
-      if (this.selectedAmenities.length) queryParams.append('amenities', this.selectedAmenities.join(','));
-      if (this.minSpots !== null) queryParams.append('minSpots', this.minSpots);
-      if (this.maxSpots !== null) queryParams.append('maxSpots', this.maxSpots);
+      if (this.minPrice !== null) queryParams.append('minPrice', this.minPrice); // backend expects min_price
+      if (this.maxPrice !== null) queryParams.append('maxPrice', this.maxPrice); // backend expects max_price
+      if (this.selectedAmenities.length) queryParams.append('amenities', this.selectedAmenities.join(',')); // backend expects amenities as comma-separated
+      if (this.minSpots !== null) queryParams.append('minCapacity', this.minSpots); // backend expects min_capacity
+      if (this.maxSpots !== null) queryParams.append('maxCapacity', this.maxSpots); // backend expects max_capacity
       this.$router.push({
         path: '/search',
         query: Object.fromEntries(queryParams)
