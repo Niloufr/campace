@@ -224,39 +224,7 @@ export default {
     }
   },
   methods: {
-    handleLocationInput(value) {
-      if (typeof value === 'string') {
-        this.searchInput = value;
-        this.fetchLocationSuggestions(value);
-      }
-    },
-    async fetchLocationSuggestions(query) {
-      if (!query || query.length < 1) {
-        this.locationSuggestions = [];
-        return;
-      }
-      
-      this.loadingLocations = true;
-      try {
-        const res = await fetch(`http://localhost:3000/locations/search?q=${encodeURIComponent(query)}`, {
-          headers: {
-            ...authUtils.getAuthHeaders()
-          }
-        });
-        if (!res.ok) throw new Error('Failed to fetch locations');
-        const data = await res.json();
-        this.locationSuggestions = data.map(loc => ({
-          id: loc.location_id,
-          name: `${loc.city}, ${loc.country}`,
-          ...loc
-        }));
-      } catch (error) {
-        console.error('Error fetching location suggestions:', error);
-        this.$toast.error('Failed to load location suggestions');
-      } finally {
-        this.loadingLocations = false;
-      }
-    },    searchCampingSites() {
+    searchCampingSites() {
       if (!this.city && !this.country && !this.minPrice && !this.maxPrice && !this.selectedAmenities.length && !this.minSpots && !this.maxSpots) {
         this.$toast.error('Please enter at least one search criteria');
         return;

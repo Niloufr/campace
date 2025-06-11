@@ -208,17 +208,19 @@
               ...authUtils.getAuthHeaders()
             }
           });
-          
-          if (!res.ok) throw await res.json();
-          
+          let result;
+          try {
+            result = await res.json();
+          } catch (e) {
+            result = {};
+          }
+          if (!res.ok) throw result;
           this.locations = this.locations.filter(
             location => location.location_id !== this.locationToDelete.location_id
           );
-          
           if (this.campspot.location_id === this.locationToDelete.location_id) {
             this.campspot.location_id = null;
           }
-          
           this.deleteDialog = false;
           this.$toast.success('Location deleted successfully!');
         } catch (error) {

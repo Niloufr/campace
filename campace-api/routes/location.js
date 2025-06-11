@@ -125,4 +125,58 @@ router.get('/popular', async (req, res) => {
     }
 });
 
+// Update a location (protected, owner only)
+router.put('/:id', authenticateToken, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'Invalid location ID' });
+        }
+        const location = await prisma.location.findUnique({ where: { location_id: id } });
+        if (!location) return res.status(404).json({ message: 'Location not found' });
+        if (location.owner_id !== req.user.user_id) {
+            return res.status(403).json({ message: 'Not authorized to update this location' });
+        }
+        const { address, city, province_or_state, country, postal_code } = req.body;
+        const updated = await prisma.location.update({
+            where: { location_id: id },
+            data: {
+                address,
+                city,
+                province_or_state,
+                country,
+                postal_code: parseInt(postal_code)
+            }
+        });
+        res.json(updated);
+    } catch (error) {
+        console.error('Error updating location:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// Delete a location (protected, owner only, only if no spots)
+router.delete('/:id', authenticateToken, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'Invalid location ID' });
+        }
+        const location = await prisma.location.findUnique({ where: { location_id: id } });
+        if (!location) return res.status(404).json({ message: 'Location not found' });
+        if (location.owner_id !== req.user.user_id) {
+            return res.status(403).json({ message: 'Not authorized to delete this location' });
+        }
+        const spotCount = await prisma.campspot.count({ where: { location_id: id } });
+        if (spotCount > 0) {
+            return res.status(400).json({ message: 'Cannot delete a location that has camping spots.' });
+        }
+        await prisma.location.delete({ where: { location_id: id } });
+        res.json({ message: 'Location deleted' });
+    } catch (error) {
+        console.error('Error deleting location:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
 module.exports = router;

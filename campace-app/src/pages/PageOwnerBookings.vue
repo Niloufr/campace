@@ -43,7 +43,7 @@
                   </p>
                   <v-btn
                     color="primary"
-                    to="/campspots/new"
+                    to="/owner/create-spot"
                     class="text-none"
                   >
                     <v-icon left>mdi-plus</v-icon>
