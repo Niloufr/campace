@@ -22,7 +22,7 @@ app.use(cors({
 
 app.use(logger('dev'));
 app.use(express.json({ limit: '10mb' })); // Increased limit for file uploads if needed
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false })); // allows reading req.body data
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
